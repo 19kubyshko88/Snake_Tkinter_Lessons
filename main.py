@@ -33,7 +33,13 @@ class Snake(object):
         self.vector = 'right'
 
     def move(self):
-        x1, y1, x2, y2 = c.coords(self.segments[0].instance)  # получаем координаты сегмента головы
+        """ Двигает змейку в заданном направлении """
+        for index in range(len(self.segments) - 1):  # перебираем все сегменты кроме первого
+            segment = self.segments[index].instance
+            x1, y1, x2, y2 = c.coords(self.segments[index + 1].instance)
+            c.coords(segment, x1, y1, x2, y2)  # задаем каждому сегменту позицию сегмента стоящего после него
+
+        x1, y1, x2, y2 = c.coords(self.segments[-1].instance)  # получаем координаты сегмента головы
         match self.vector:
             case 'right':
                 c.coords(self.segments[-1].instance,  # при перемещении головы меняются координаты
@@ -69,7 +75,10 @@ class Snake(object):
                 self.vector = 'right'
 
 
-segments = [Segment(SEG_SIZE, SEG_SIZE), ]  # создаем набор сегментов. пока одна голова
+segments = [Segment(SEG_SIZE, SEG_SIZE),  # создаем набор сегментов
+            Segment(SEG_SIZE * 2, SEG_SIZE),
+            Segment(SEG_SIZE * 3, SEG_SIZE)
+            ]
 
 s = Snake(segments)  # собственно змейка
 # s.move()  # Просто вызов не работает - картинка не обновляется. Нужен root.after.
