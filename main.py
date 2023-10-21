@@ -37,17 +37,31 @@ class Snake(object):
                  x1 + SEG_SIZE, y1,                   # левого верхнего и
                  x2 + SEG_SIZE, y2)                      # правого нижнего угла прямоугольника.
 
+    def change_direction(self, event):
+        print('Ты нажал кнопку', event.char.lower())
+
 
 segments = [Segment(SEG_SIZE, SEG_SIZE), ]  # создаем набор сегментов. пока одна голова
 
 s = Snake(segments)  # собственно змейка
 # s.move()  # Просто вызов не работает - картинка не обновляется. Нужен root.after.
 
+c.focus_set()
+c.bind("<Key-A>", s.change_direction)  # или KeyPress, также можно отдельно Key-a или Key-A
+c.bind("<Key-b>", s.change_direction)
+c.bind("<e>", s.change_direction)
+c.bind("<Return>", s.change_direction)
+c.bind("<Key-space>", s.change_direction)
+c.bind("<Control-c>", s.change_direction)
+c.bind("<KeyRelease-f>", s.change_direction)
+c.bind("<Button-1>", s.change_direction)
+c.bind("<Button-2>", s.change_direction)
+# c.bind("<Double-Button>", s.change_direction)
+
 
 def main():
     s.move()
     root.after(100, main)
-
 
 main()
 
