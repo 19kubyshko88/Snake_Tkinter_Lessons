@@ -30,15 +30,43 @@ class Segment(object):
 class Snake(object):
     def __init__(self, segments):
         self.segments = segments
+        self.vector = 'right'
 
     def move(self):
         x1, y1, x2, y2 = c.coords(self.segments[0].instance)  # получаем координаты сегмента головы
-        c.coords(self.segments[-1].instance,  # при перемещении головы меняются координаты
-                 x1 + SEG_SIZE, y1,                   # левого верхнего и
-                 x2 + SEG_SIZE, y2)                      # правого нижнего угла прямоугольника.
+        match self.vector:
+            case 'right':
+                c.coords(self.segments[-1].instance,  # при перемещении головы меняются координаты
+                         x1 + SEG_SIZE, y1,                   # левого верхнего и
+                         x2 + SEG_SIZE, y2)                      # правого нижнего угла прямоугольника.
+            case 'down':
+                c.coords(self.segments[-1].instance,
+                         x1, y1 + SEG_SIZE,
+                         x2, y2 + SEG_SIZE)
+            case 'up':
+                c.coords(self.segments[-1].instance,
+                         x1, y1 - SEG_SIZE,
+                         x2, y2 - SEG_SIZE)
+            case 'left':
+                c.coords(self.segments[-1].instance,
+                         x1 - SEG_SIZE, y1,
+                         x2 - SEG_SIZE, y2)
 
     def change_direction(self, event):
-        print('Ты нажал кнопку', event.char.lower())
+        # print('Ты нажал кнопку', event.char.lower())
+        match  event.char.lower():
+            case 'a':
+                print('влево')
+                self.vector = 'left'
+            case 'w':
+                print('вверх')
+                self.vector = 'up'
+            case 's':
+                print('вниз')
+                self.vector = 'down'
+            case 'd':
+                print('направо')
+                self.vector = 'right'
 
 
 segments = [Segment(SEG_SIZE, SEG_SIZE), ]  # создаем набор сегментов. пока одна голова
@@ -47,21 +75,22 @@ s = Snake(segments)  # собственно змейка
 # s.move()  # Просто вызов не работает - картинка не обновляется. Нужен root.after.
 
 c.focus_set()
-c.bind("<Key-A>", s.change_direction)  # или KeyPress, также можно отдельно Key-a или Key-A
-c.bind("<Key-b>", s.change_direction)
-c.bind("<e>", s.change_direction)
-c.bind("<Return>", s.change_direction)
-c.bind("<Key-space>", s.change_direction)
-c.bind("<Control-c>", s.change_direction)
-c.bind("<KeyRelease-f>", s.change_direction)
-c.bind("<Button-1>", s.change_direction)
-c.bind("<Button-2>", s.change_direction)
+c.bind("<Key>", s.change_direction)  # или KeyPress, также можно отдельно Key-a или Key-A
+# c.bind("<Key-b>", s.change_direction)
+# c.bind("<e>", s.change_direction)
+# c.bind("<Return>", s.change_direction)
+# c.bind("<Key-space>", s.change_direction)
+# c.bind("<Control-c>", s.change_direction)
+# c.bind("<KeyRelease-f>", s.change_direction)
+# c.bind("<Button-1>", s.change_direction)
+# c.bind("<Button-2>", s.change_direction)
 # c.bind("<Double-Button>", s.change_direction)
 
 
 def main():
     s.move()
     root.after(100, main)
+
 
 main()
 
