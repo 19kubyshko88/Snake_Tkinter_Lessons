@@ -4,7 +4,7 @@ from tkinter import *
 root = Tk()
 
 root.title("PythonicWay Snake")
-root.resizable(0, 0)
+root.resizable(False, False)
 
 
 WIDTH = 800  # ширина экрана
@@ -15,10 +15,25 @@ SEG_SIZE = 20  # Размер сегмента змейки
 
 
 c = Canvas(root, width=WIDTH, height=HEIGHT, bg="#003300")
-# c.pack()
-# c.place(x=100, y=0)
 c.grid()  # Без этого canvas не появится. Альтернатива pack()  и place()
 
-# root.update()
-# print(root.geometry())
+
+class Segment(object):
+    def __init__(self, x, y):
+        self.instance = c.create_rectangle(x, y,
+                                           x + SEG_SIZE, y + SEG_SIZE,
+                                           fill="white",
+                                           # outline='white'
+                                           )
+
+
+class Snake(object):
+    def __init__(self, segments):
+        self.segments = segments
+
+
+segments = [Segment(SEG_SIZE, SEG_SIZE), ] # создаем набор сегментов. пока одна голова
+
+s = Snake(segments)  # собственно змейка
+
 root.mainloop()  # Запускаем окно
