@@ -19,13 +19,7 @@ c.grid()  # Без этого canvas не появится. Альтернати
 
 root.update()
 
-
-segments = [Segment(SEG_SIZE, SEG_SIZE, SEG_SIZE, c),  # создаем набор сегментов
-            Segment(SEG_SIZE * 2, SEG_SIZE, SEG_SIZE, c),
-            Segment(SEG_SIZE * 3, SEG_SIZE, SEG_SIZE, c)
-            ]
-
-s = Snake(segments, c)  # собственно змейка
+s = Snake(Segment(SEG_SIZE, SEG_SIZE, SEG_SIZE, c))  # собственно змейка
 # s.move()  # Просто вызов не работает - картинка не обновляется. Нужен root.after.
 
 c.focus_set()

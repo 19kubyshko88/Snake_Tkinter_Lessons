@@ -6,17 +6,24 @@ from PIL import Image, ImageTk
 class Segment:
     def __init__(self, x, y, size, c):
         self.size = size
-        self.instance = c.create_rectangle(x, y,
-                                           x + self.size, y + self.size,
+        self.x = x
+        self.y = y
+        self.c = c
+        self.instance = c.create_rectangle(self.x, self.y,
+                                           x + self.size, self.y + self.size,
                                            fill="white",
                                            # outline='white'
                                            )
 
 
 class Snake:
-    def __init__(self, segments, c):
-        self.c = c
-        self.segments = segments
+    def __init__(self, first_segment: Segment):
+        self.c = first_segment.c
+        self.segment = first_segment
+        self.segments = [self.segment,  # создаем набор сегментов
+                         Segment(self.segment.size * 2, self.segment.size, self.segment.size, self.c),
+                         Segment(self.segment.size * 3, self.segment.size, self.segment.size, self.c)
+                         ]
         self.vector = 'right'
         self.SEG_SIZE = self.segments[0].size
 
