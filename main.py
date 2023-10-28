@@ -40,7 +40,7 @@ c.bind("<Key>", s.change_direction)  # или KeyPress, также можно о
 # c.bind("<Button-2>", s.change_direction)
 # c.bind("<Double-Button>", s.change_direction)
 
-apple = Food(s, c)
+apple = Food(s, c, "images/apple.png")
 
 
 def main():

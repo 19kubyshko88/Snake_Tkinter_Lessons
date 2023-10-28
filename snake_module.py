@@ -1,8 +1,9 @@
 import random
 from tkinter import *
+from PIL import Image, ImageTk
 
 
-class Segment():
+class Segment:
     def __init__(self, x, y, size, c):
         self.size = size
         self.instance = c.create_rectangle(x, y,
@@ -12,7 +13,7 @@ class Segment():
                                            )
 
 
-class Snake():
+class Snake:
     def __init__(self, segments, c):
         self.c = c
         self.segments = segments
@@ -63,16 +64,19 @@ class Snake():
 
 
 class Food:
-    def __init__(self, snake: Snake, canvas: Canvas):
+    def __init__(self, snake: Snake, canvas: Canvas, img_path):
         self.snake = snake
         self.c = canvas
         self.WIDTH, self.HEIGHT = self.c.winfo_width(), self.c.winfo_height()
         self.SIZE = self.snake.segments[0].size
         self.posx, self.posy = self.generate_rand_pos(self.WIDTH, self.HEIGHT)
-        self.instance = self.c.create_oval(self.posx, self.posy,  # еда - это кружочек красного цвета
-                                           self.posx + self.SIZE,
-                                           self.posy + self.SIZE,
-                                           fill="red")
+        self.image = Image.open(img_path)
+        self.image = self.image.resize((self.SIZE, self.SIZE), Image.LANCZOS)
+        self.image = ImageTk.PhotoImage(self.image)
+
+        # Create the image item on the canvas
+        self.instance = self.c.create_image(self.posx, self.posy, image=self.image, anchor=NW)
+        self.coords = self.posx, self.posy, self.posx + self.SIZE, self.posy + self.SIZE
 
     def generate_rand_pos(self, width, height):
         rand_x = self.SIZE * (random.randint(1, (width - self.SIZE) // self.SIZE))
@@ -81,13 +85,12 @@ class Food:
 
     def go_to_random_pos(self):
         self.posx, self.posy = self.generate_rand_pos(self.WIDTH, self.HEIGHT)
-        self.c.coords(self.instance,
-                      self.posx, self.posy,
-                      self.posx + self.SIZE,
-                      self.posy + self.SIZE)
+        self.coords = self.posx, self.posy, self.posx + self.SIZE, self.posy + self.SIZE
+        self.c.coords(self.instance, self.posx, self.posy)
 
     def check_snake(self):
         head_coords = self.c.coords(self.snake.segments[-1].instance)
-        # print(head_coords)
-        if head_coords == self.c.coords(self.instance):
+        # print(head_coords,  (self.posx, self.posy, self.posx + self.SIZE,self.posy + self.SIZE),
+        #       head_coords == (self.posx, self.posy, self.posx + self.SIZE,self.posy + self.SIZE))
+        if all(head_coor == food_coor for head_coor, food_coor in zip(head_coords, self.coords)):
             self.go_to_random_pos()
