@@ -1,3 +1,4 @@
+import random
 from tkinter import *
 
 # Создаем окно
@@ -17,11 +18,14 @@ SEG_SIZE = 20  # Размер сегмента змейки
 c = Canvas(root, width=WIDTH, height=HEIGHT, bg="#003300")
 c.grid()  # Без этого canvas не появится. Альтернатива pack()  и place()
 
+root.update()
+
 
 class Segment(object):
-    def __init__(self, x, y):
+    def __init__(self, x, y, size):
+        self.size = size
         self.instance = c.create_rectangle(x, y,
-                                           x + SEG_SIZE, y + SEG_SIZE,
+                                           x + self.size, y + self.size,
                                            fill="white",
                                            # outline='white'
                                            )
@@ -75,9 +79,40 @@ class Snake(object):
                 self.vector = 'right'
 
 
-segments = [Segment(SEG_SIZE, SEG_SIZE),  # создаем набор сегментов
-            Segment(SEG_SIZE * 2, SEG_SIZE),
-            Segment(SEG_SIZE * 3, SEG_SIZE)
+class Food:
+    def __init__(self, snake: Snake, canvas: Canvas):
+        self.snake = snake
+        self.c = canvas
+        self.WIDTH, self.HEIGHT = self.c.winfo_width(), self.c.winfo_height()
+        self.SiZE = self.snake.segments[0].size
+        self.posx, self.posy = self.generate_rand_pos(self.WIDTH, self.HEIGHT)
+        self.instance = c.create_oval(self.posx, self.posy,  # еда - это кружочек красного цвета
+                                      self.posx + SEG_SIZE,
+                                      self.posy + SEG_SIZE,
+                                      fill="red")
+
+    def generate_rand_pos(self, width, height):
+        rand_x = self.SiZE * (random.randint(1, (width - self.SiZE) // self.SiZE))
+        rand_y = self.SiZE * (random.randint(1, (height - self.SiZE) // self.SiZE))
+        return rand_x, rand_y
+
+    def go_to_random_pos(self):
+        self.posx, self.posy = self.generate_rand_pos(self.WIDTH, self.HEIGHT)
+        self.c.coords(self.instance,
+                      self.posx, self.posy,
+                      self.posx + SEG_SIZE,
+                      self.posy + SEG_SIZE)
+
+    def check_snake(self):
+        head_coords = self.c.coords(self.snake.segments[-1].instance)
+        # print(head_coords)
+        if head_coords == self.c.coords(self.instance):
+            self.go_to_random_pos()
+
+
+segments = [Segment(SEG_SIZE, SEG_SIZE, SEG_SIZE),  # создаем набор сегментов
+            Segment(SEG_SIZE * 2, SEG_SIZE, SEG_SIZE),
+            Segment(SEG_SIZE * 3, SEG_SIZE, SEG_SIZE)
             ]
 
 s = Snake(segments)  # собственно змейка
@@ -95,9 +130,12 @@ c.bind("<Key>", s.change_direction)  # или KeyPress, также можно о
 # c.bind("<Button-2>", s.change_direction)
 # c.bind("<Double-Button>", s.change_direction)
 
+apple = Food(s, c)
+
 
 def main():
     s.move()
+    apple.check_snake()
     root.after(100, main)
 
 
