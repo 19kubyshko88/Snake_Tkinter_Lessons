@@ -62,6 +62,16 @@ class Snake:
                 print('направо')
                 self.vector = 'right'
 
+    def add_segment(self):
+        """ Добавляет сегмент змейке """
+        # определяем последний сегмент
+        last_seg = self.c.coords(self.segments[-1].instance)
+        # определяем координаты куда поставить следующий сегмент
+        x = last_seg[2] - self.SEG_SIZE
+        y = last_seg[3] - self.SEG_SIZE
+        # добавляем змейке еще один сегмент в заданных координатах
+        self.segments.insert(0, Segment(x, y, self.SEG_SIZE, self.c))
+
 
 class Food:
     def __init__(self, snake: Snake, canvas: Canvas, img_path):
@@ -94,3 +104,4 @@ class Food:
         #       head_coords == (self.posx, self.posy, self.posx + self.SIZE,self.posy + self.SIZE))
         if all(head_coor == food_coor for head_coor, food_coor in zip(head_coords, self.coords)):
             self.go_to_random_pos()
+            self.snake.add_segment()
