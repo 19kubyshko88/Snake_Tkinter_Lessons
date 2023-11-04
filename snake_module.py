@@ -126,3 +126,33 @@ class Food:
             self.snake.change_score(self.val)
             self.go_to_random_pos()
             self.snake.add_segment()
+
+
+class Game:
+    def __init__(self, c: Canvas, segment_size):
+        self.c = c
+        self.c.update()
+        self.segment_size = segment_size
+        # self.init_game(self.segment_size)
+        self.start_new = True
+
+    def init_game(self, segment_size):
+        # инициализация объектов
+        self.s = Snake(Segment(segment_size, segment_size, self.segment_size, self.c))  # собственно змейка
+        self.c.focus_set()
+        self.c.bind("<Key>", self.s.change_direction)  # или KeyPress, также можно отдельно Key-a или Key-A
+        self.apple = Food(self.s, "images/apple.png")
+        self.apple2 = Food(self.s, "images/apple.png", 5)
+
+    def main(self):
+        if self.start_new:
+            self.init_game(self.segment_size)
+            self.start_new = False
+        self.s.move()
+        self.apple.check_snake()
+        self.apple2.check_snake()
+        x1, y1, x2, y2 = self.s.get_head_pos()
+        if x1 < 0 or x2 > self.c.winfo_width() or y1 < 0 or y2 > self.c.winfo_height():
+            self.c.delete('all')
+            self.start_new = True
+        self.c.after(100, self.main)
