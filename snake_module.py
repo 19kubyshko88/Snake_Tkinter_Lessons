@@ -14,11 +14,13 @@ class Segment:
                                            fill="white",
                                            # outline='white'
                                            )
+        # print('snake c id', id(self.c))
 
 
 class Snake:
     def __init__(self, first_segment: Segment):
         self.c = first_segment.c
+        # print('snake c id', id(self.c))
         self.segment = first_segment
         self.segments = [self.segment,  # создаем набор сегментов
                          Segment(self.segment.size * 2, self.segment.size, self.segment.size, self.c),
@@ -26,6 +28,8 @@ class Snake:
                          ]
         self.vector = 'right'
         self.SEG_SIZE = self.segments[0].size
+        self.score = 0
+        self.score_text = self.c.create_text(50, 20, text="Счет: 0", fill="white")
 
     def move(self):
         """ Двигает змейку в заданном направлении """
@@ -79,20 +83,26 @@ class Snake:
         # добавляем змейке еще один сегмент в заданных координатах
         self.segments.insert(0, Segment(x, y, self.SEG_SIZE, self.c))
 
+    def change_score(self, val=1):
+        self.c.delete(self.score_text)
+        self.score += val
+        self.score_text = self.c.create_text(50, 20, text=f"Счет: {self.score}", fill="white")
+
 
 class Food:
-    def __init__(self, snake: Snake, canvas: Canvas, img_path):
+    def __init__(self, snake: Snake, img_path, val=1):
         self.snake = snake
-        self.c = canvas
+        self.c = snake.c
         self.WIDTH, self.HEIGHT = self.c.winfo_width(), self.c.winfo_height()
         self.SIZE = self.snake.segments[0].size
         self.posx, self.posy = self.generate_rand_pos(self.WIDTH, self.HEIGHT)
         self.image = Image.open(img_path)
         self.image = self.image.resize((self.SIZE, self.SIZE), Image.LANCZOS)
         self.image = ImageTk.PhotoImage(self.image)
+        self.val = val
 
         # Create the image item on the canvas
-        self.instance = self.c.create_image(self.posx, self.posy, image=self.image, anchor=NW)
+        self.instance = self.snake.c.create_image(self.posx, self.posy, image=self.image, anchor=NW)
         self.coords = self.posx, self.posy, self.posx + self.SIZE, self.posy + self.SIZE
 
     def generate_rand_pos(self, width, height):
@@ -110,5 +120,6 @@ class Food:
         # print(head_coords,  (self.posx, self.posy, self.posx + self.SIZE,self.posy + self.SIZE),
         #       head_coords == (self.posx, self.posy, self.posx + self.SIZE,self.posy + self.SIZE))
         if all(head_coor == food_coor for head_coor, food_coor in zip(head_coords, self.coords)):
+            self.snake.change_score(self.val)
             self.go_to_random_pos()
             self.snake.add_segment()
