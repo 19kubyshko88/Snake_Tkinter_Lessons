@@ -19,13 +19,14 @@ class Segment:
 
 class Snake:
     def __init__(self, first_segment: Segment):
-        self.c = first_segment.c
+        self.c: Canvas = first_segment.c
         # print('snake c id', id(self.c))
         self.segment = first_segment
         self.segments = [self.segment,  # создаем набор сегментов
                          Segment(self.segment.size * 2, self.segment.size, self.segment.size, self.c),
                          Segment(self.segment.size * 3, self.segment.size, self.segment.size, self.c)
                          ]
+        self.head = self.segments[-1].instance
         self.vector = 'right'
         self.SEG_SIZE = self.segments[0].size
         self.score = 0
@@ -38,22 +39,22 @@ class Snake:
             x1, y1, x2, y2 = self.c.coords(self.segments[index + 1].instance)
             self.c.coords(segment, x1, y1, x2, y2)  # задаем каждому сегменту позицию сегмента стоящего после него
 
-        x1, y1, x2, y2 = self.c.coords(self.segments[-1].instance)  # получаем координаты сегмента головы
+        x1, y1, x2, y2 = self.get_head_pos()  # получаем координаты сегмента головы
         match self.vector:
             case 'right':
-                self.c.coords(self.segments[-1].instance,  # при перемещении головы меняются координаты
+                self.c.coords(self.head,  # при перемещении головы меняются координаты
                               x1 + self.SEG_SIZE, y1,  # левого верхнего и
                               x2 + self.SEG_SIZE, y2)  # правого нижнего угла прямоугольника.
             case 'down':
-                self.c.coords(self.segments[-1].instance,
+                self.c.coords(self.head,
                               x1, y1 + self.SEG_SIZE,
                               x2, y2 + self.SEG_SIZE)
             case 'up':
-                self.c.coords(self.segments[-1].instance,
+                self.c.coords(self.head,
                               x1, y1 - self.SEG_SIZE,
                               x2, y2 - self.SEG_SIZE)
             case 'left':
-                self.c.coords(self.segments[-1].instance,
+                self.c.coords(self.head,
                               x1 - self.SEG_SIZE, y1,
                               x2 - self.SEG_SIZE, y2)
 
@@ -75,11 +76,8 @@ class Snake:
 
     def add_segment(self):
         """ Добавляет сегмент змейке """
-        # определяем последний сегмент
-        last_seg = self.c.coords(self.segments[-1].instance)
         # определяем координаты куда поставить следующий сегмент
-        x = last_seg[2] - self.SEG_SIZE
-        y = last_seg[3] - self.SEG_SIZE
+        x, y, _, _ = self.get_head_pos()
         # добавляем змейке еще один сегмент в заданных координатах
         self.segments.insert(0, Segment(x, y, self.SEG_SIZE, self.c))
 
@@ -87,6 +85,9 @@ class Snake:
         self.c.delete(self.score_text)
         self.score += val
         self.score_text = self.c.create_text(50, 20, text=f"Счет: {self.score}", fill="white")
+
+    def get_head_pos(self):
+        return self.c.coords(self.head)
 
 
 class Food:
