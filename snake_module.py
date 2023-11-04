@@ -27,13 +27,15 @@ class Snake:
                          Segment(self.segment.size * 3, self.segment.size, self.segment.size, self.c)
                          ]
         self.head = self.segments[-1].instance
-        self.vector = 'right'
+        self.vector = 'stop'
         self.SEG_SIZE = self.segments[0].size
         self.score = 0
         self.score_text = self.c.create_text(50, 20, text="Счет: 0", fill="white")
 
     def move(self):
         """ Двигает змейку в заданном направлении """
+        if self.vector == 'stop':
+            return
         for index in range(len(self.segments) - 1):  # перебираем все сегменты кроме первого
             segment = self.segments[index].instance
             x1, y1, x2, y2 = self.c.coords(self.segments[index + 1].instance)
