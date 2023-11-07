@@ -4,33 +4,31 @@ from PIL import Image, ImageTk
 
 
 class Segment:
-    def __init__(self, x, y, size, c):
-        self.size = size
+    def __init__(self, x, y):
+        self.size = Game.SEG_SIZE
+        self.c = Game.c
         self.x = x
         self.y = y
-        self.c = c
-        self.instance = c.create_rectangle(self.x, self.y,
-                                           x + self.size, self.y + self.size,
-                                           fill="white",
-                                           # outline='white'
-                                           )
+        self.instance = self.c.create_rectangle(self.x, self.y,
+                                                x + self.size, self.y + self.size,
+                                                fill="white",
+                                                # outline='white'
+                                                )
         # print('snake c id', id(self.c))
 
 
 class Snake:
     def __init__(self, first_segment: Segment):
-        self.c: Canvas = first_segment.c
+        self.c: Canvas = Game.c
         # print('snake c id', id(self.c))
         self.segment = first_segment
         self.segments = [self.segment,  # создаем набор сегментов
-                         Segment(self.segment.size * 2, self.segment.size, self.segment.size, self.c),
-                         Segment(self.segment.size * 3, self.segment.size, self.segment.size, self.c)
+                         Segment(Game.SEG_SIZE * 2, self.segment.size),
+                         Segment(self.segment.size * 3, self.segment.size)
                          ]
         self.head = self.segments[-1].instance
         self.vector = 'stop'
         self.SEG_SIZE = self.segments[0].size
-        self.score = 0
-        self.score_text = self.c.create_text(50, 20, text="Счет: 0", fill="white")
 
     def move(self):
         """ Двигает змейку в заданном направлении """
@@ -81,78 +79,97 @@ class Snake:
         # определяем координаты куда поставить следующий сегмент
         x, y, _, _ = self.get_head_pos()
         # добавляем змейке еще один сегмент в заданных координатах
-        self.segments.insert(0, Segment(x, y, self.SEG_SIZE, self.c))
-
-    def change_score(self, val=1):
-        self.c.delete(self.score_text)
-        self.score += val
-        self.score_text = self.c.create_text(50, 20, text=f"Счет: {self.score}", fill="white")
+        self.segments.insert(0, Segment(x, y))
 
     def get_head_pos(self):
         return self.c.coords(self.head)
 
 
 class Food:
-    def __init__(self, snake: Snake, img_path, val=1):
-        self.snake = snake
-        self.c = snake.c
+    def __init__(self, img_path, val=1):
+        self.c = Game.c
         self.WIDTH, self.HEIGHT = self.c.winfo_width(), self.c.winfo_height()
-        self.SIZE = self.snake.segments[0].size
         self.posx, self.posy = self.generate_rand_pos(self.WIDTH, self.HEIGHT)
         self.image = Image.open(img_path)
-        self.image = self.image.resize((self.SIZE, self.SIZE), Image.LANCZOS)
+        self.image = self.image.resize((Game.SEG_SIZE, Game.SEG_SIZE), Image.LANCZOS)
         self.image = ImageTk.PhotoImage(self.image)
         self.val = val
 
         # Create the image item on the canvas
-        self.instance = self.snake.c.create_image(self.posx, self.posy, image=self.image, anchor=NW)
-        self.coords = self.posx, self.posy, self.posx + self.SIZE, self.posy + self.SIZE
+        self.instance = self.c.create_image(self.posx, self.posy, image=self.image, anchor=NW)
+        self.coords = self.posx, self.posy, self.posx + Game.SEG_SIZE, self.posy + Game.SEG_SIZE
 
     def generate_rand_pos(self, width, height):
-        rand_x = self.SIZE * (random.randint(1, (width - self.SIZE) // self.SIZE))
-        rand_y = self.SIZE * (random.randint(1, (height - self.SIZE) // self.SIZE))
+        rand_x = Game.SEG_SIZE * (random.randint(1, (width - Game.SEG_SIZE) // Game.SEG_SIZE))
+        rand_y = Game.SEG_SIZE * (random.randint(1, (height - Game.SEG_SIZE) // Game.SEG_SIZE))
         return rand_x, rand_y
 
     def go_to_random_pos(self):
         self.posx, self.posy = self.generate_rand_pos(self.WIDTH, self.HEIGHT)
-        self.coords = self.posx, self.posy, self.posx + self.SIZE, self.posy + self.SIZE
+        self.coords = self.posx, self.posy, self.posx + Game.SEG_SIZE, self.posy + Game.SEG_SIZE
         self.c.coords(self.instance, self.posx, self.posy)
 
-    def check_snake(self):
-        head_coords = self.c.coords(self.snake.segments[-1].instance)
-        # print(head_coords,  (self.posx, self.posy, self.posx + self.SIZE,self.posy + self.SIZE),
-        #       head_coords == (self.posx, self.posy, self.posx + self.SIZE,self.posy + self.SIZE))
-        if all(head_coor == food_coor for head_coor, food_coor in zip(head_coords, self.coords)):
-            self.snake.change_score(self.val)
-            self.go_to_random_pos()
-            self.snake.add_segment()
 
+class Game(Frame):
+    # def __new__(cls, *args, **kwargs):  # Можно зaдать канву до создания объекта класса (до __init__),  вместо Game.c = c.
+    #     cls.c = kwargs['c']
+    #     return super().__new__(cls)
 
-class Game:
-    def __init__(self, c: Canvas, segment_size):
-        self.c = c
-        self.c.update()
-        self.segment_size = segment_size
-        # self.init_game(self.segment_size)
+    def __init__(self, root, c: Canvas, segment_size):
+        super().__init__(root)
         self.start_new = True
+        self.foods = []
+        self.poison = []
+        self.img_food_path = []
+        Game.c = c
+        Game.WIDTH = self.c.winfo_width()
+        Game.HEIGHT = self.c.winfo_height()
+        Game.SEG_SIZE = segment_size
+        Game.text_x, Game.text_y = Game.WIDTH * 0.9, Game.HEIGHT * 0.1
 
-    def init_game(self, segment_size):
+    def add_food(self, img_path="images/apple.png", val=1):
+        self.img_food_path.append(img_path)
+        self.foods.append(Food(img_path, val))
+
+    def init_game(self):
         # инициализация объектов
-        self.s = Snake(Segment(segment_size, segment_size, self.segment_size, self.c))  # собственно змейка
+        self.score = 0
+        self.score_text = self.c.create_text(Game.text_x, Game.text_y, text="Счет: 0", fill="white")
+        self.s = Snake(Segment(Game.SEG_SIZE, Game.SEG_SIZE))  # собственно змейка
         self.c.focus_set()
         self.c.bind("<Key>", self.s.change_direction)  # или KeyPress, также можно отдельно Key-a или Key-A
-        self.apple = Food(self.s, "images/apple.png")
-        self.apple2 = Food(self.s, "images/apple.png", 5)
+        if not self.foods:
+            self.add_food()
+        else:
+            [food.go_to_random_pos() for food in self.foods]
+        [Food(im_path).go_to_random_pos() for im_path in self.img_food_path]
+        # self.apple2 = Food(self.s, "images/apple.png", 5)
+
+    def check_feeding(self):
+        head_coords = self.c.coords(self.s.head)
+        for food in self.foods:
+            if all(head_coor == food_coor for head_coor, food_coor in zip(head_coords, food.coords)):
+                self.change_score(food.val)
+                food.go_to_random_pos()
+                self.s.add_segment()
+
+    def change_score(self, val=1):
+        self.c.delete(self.score_text)
+        self.score += val
+        self.score_text = self.c.create_text(Game.text_x, Game.text_y, text=f"Счет: {self.score}", fill="white")
 
     def main(self):
         if self.start_new:
-            self.init_game(self.segment_size)
+            self.init_game()
             self.start_new = False
         self.s.move()
-        self.apple.check_snake()
-        self.apple2.check_snake()
+        # [food.check_snake() for food in self.foods]
+        self.check_feeding()
         x1, y1, x2, y2 = self.s.get_head_pos()
         if x1 < 0 or x2 > self.c.winfo_width() or y1 < 0 or y2 > self.c.winfo_height():
-            self.c.delete('all')
+            for segment in self.s.segments:
+                self.c.delete(segment.instance)
+            self.c.delete(self.score_text)
+            # [self.c.delete(food) for food in self.foods]
             self.start_new = True
         self.c.after(100, self.main)
