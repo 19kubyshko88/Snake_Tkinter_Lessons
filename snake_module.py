@@ -10,10 +10,10 @@ class Segment:
         self.x = x
         self.y = y
         self.instance = self.__c.create_rectangle(self.x, self.y,
-                                                x + self.size, self.y + self.size,
-                                                fill="white",
-                                                # outline='white'
-                                                )
+                                                  x + self.size, self.y + self.size,
+                                                  fill="white",
+                                                  # outline='white'
+                                                  )
         # print('snake c id', id(self.c))
 
 
@@ -112,29 +112,27 @@ class Food:
 
 
 class Game(Frame):
-    # def __new__(cls, *args, **kwargs):  # Можно зaдать канву до создания объекта класса (до __init__),  вместо Game.c = c.
-    #     cls.root = kwargs['root']
-    #     cls.WIDTH = 800  # ширина экрана
-    #     cls.HEIGHT = 600  # высота экрана
-    #     cls.SEG_SIZE = 20  # Размер сегмента змейки
-    #
-    #     cls.c = Canvas(cls.root, width=cls.WIDTH, height=cls.HEIGHT, bg="#003300")
-    #     cls.c.grid()  # Без этого canvas не появится. Альтернатива pack()  и place()
-    #     cls.c.update()
-    #     cls.text_x, cls.text_y = cls.WIDTH * 0.9, cls.HEIGHT * 0.1
-    #     return super().__new__(cls)
+    root = None
+    c = None
+    score_text = None
+    WIDTH = 800  # ширина экрана
+    HEIGHT = 600  # высота экрана
+    SEG_SIZE = 20  # Размер сегмента змейки
+    text_x, text_y = WIDTH * 0.9, HEIGHT * 0.1
 
-    def __init__(self, root, c: Canvas, segment_size):
+    def __new__(cls, *args, **kwargs):
+        cls.root = kwargs['root']
+        cls.c = Canvas(cls.root, width=cls.WIDTH, height=cls.HEIGHT, bg="#003300")
+        cls.c.grid()  # Без этого canvas не появится. Альтернатива pack()  и place()
+        cls.c.update()  # Нужно чтобы канва приняла размер>0. Иначе ошибка.
+        return super().__new__(cls)
+
+    def __init__(self, root):
         super().__init__(root)
         self.start_new = True
         self.foods = []
         self.poison = []
         self.img_food_path = []
-        Game.c = c
-        Game.WIDTH = self.c.winfo_width()
-        Game.HEIGHT = self.c.winfo_height()
-        Game.SEG_SIZE = segment_size
-        Game.text_x, Game.text_y = Game.WIDTH * 0.9, Game.HEIGHT * 0.1
 
     def add_food(self, img_path="images/apple.png", val=1):
         self.img_food_path.append(img_path)
@@ -143,8 +141,8 @@ class Game(Frame):
     def init_game(self):
         # инициализация объектов
         self.score = 0
-        self.score_text = self.c.create_text(Game.text_x, Game.text_y, text="Счет: 0", fill="white")
-        self.s = Snake(Segment(Game.SEG_SIZE, Game.SEG_SIZE))  # собственно змейка
+        self.score_text = self.c.create_text(Game.text_x, self.text_y, text="Счет: 0", fill="white")
+        self.s = Snake(Segment(self.SEG_SIZE, self.SEG_SIZE))  # собственно змейка
         self.c.focus_set()
         self.c.bind("<Key>", self.s.change_direction)  # или KeyPress, также можно отдельно Key-a или Key-A
         if not self.foods:
@@ -165,7 +163,7 @@ class Game(Frame):
     def change_score(self, val=1):
         self.c.delete(self.score_text)
         self.score += val
-        self.score_text = self.c.create_text(Game.text_x, Game.text_y, text=f"Счет: {self.score}", fill="white")
+        self.score_text = self.c.create_text(self.text_x, self.text_y, text=f"Счет: {self.score}", fill="white")
 
     def main(self):
         if self.start_new:
