@@ -6,10 +6,10 @@ from PIL import Image, ImageTk
 class Segment:
     def __init__(self, x, y):
         self.size = Game.SEG_SIZE
-        self.c = Game.c
+        self.__c = Game.c
         self.x = x
         self.y = y
-        self.instance = self.c.create_rectangle(self.x, self.y,
+        self.instance = self.__c.create_rectangle(self.x, self.y,
                                                 x + self.size, self.y + self.size,
                                                 fill="white",
                                                 # outline='white'
@@ -19,8 +19,9 @@ class Segment:
 
 class Snake:
     def __init__(self, first_segment: Segment):
-        self.c: Canvas = Game.c
-        # print('snake c id', id(self.c))
+        # print(dir(first_segment))  # возвращает список имён (атрибутов) в алфавитном порядке
+        # self.c: Canvas = first_segment._Segment__c  # Доступ к private аттрибуту
+        self.__c: Canvas = Game.c
         self.segment = first_segment
         self.segments = [self.segment,  # создаем набор сегментов
                          Segment(Game.SEG_SIZE * 2, self.segment.size),
@@ -36,27 +37,27 @@ class Snake:
             return
         for index in range(len(self.segments) - 1):  # перебираем все сегменты кроме первого
             segment = self.segments[index].instance
-            x1, y1, x2, y2 = self.c.coords(self.segments[index + 1].instance)
-            self.c.coords(segment, x1, y1, x2, y2)  # задаем каждому сегменту позицию сегмента стоящего после него
+            x1, y1, x2, y2 = self.__c.coords(self.segments[index + 1].instance)
+            self.__c.coords(segment, x1, y1, x2, y2)  # задаем каждому сегменту позицию сегмента стоящего после него
 
         x1, y1, x2, y2 = self.get_head_pos()  # получаем координаты сегмента головы
         match self.vector:
             case 'right':
-                self.c.coords(self.head,  # при перемещении головы меняются координаты
-                              x1 + self.SEG_SIZE, y1,  # левого верхнего и
-                              x2 + self.SEG_SIZE, y2)  # правого нижнего угла прямоугольника.
+                self.__c.coords(self.head,  # при перемещении головы меняются координаты
+                                x1 + self.SEG_SIZE, y1,  # левого верхнего и
+                                x2 + self.SEG_SIZE, y2)  # правого нижнего угла прямоугольника.
             case 'down':
-                self.c.coords(self.head,
-                              x1, y1 + self.SEG_SIZE,
-                              x2, y2 + self.SEG_SIZE)
+                self.__c.coords(self.head,
+                                x1, y1 + self.SEG_SIZE,
+                                x2, y2 + self.SEG_SIZE)
             case 'up':
-                self.c.coords(self.head,
-                              x1, y1 - self.SEG_SIZE,
-                              x2, y2 - self.SEG_SIZE)
+                self.__c.coords(self.head,
+                                x1, y1 - self.SEG_SIZE,
+                                x2, y2 - self.SEG_SIZE)
             case 'left':
-                self.c.coords(self.head,
-                              x1 - self.SEG_SIZE, y1,
-                              x2 - self.SEG_SIZE, y2)
+                self.__c.coords(self.head,
+                                x1 - self.SEG_SIZE, y1,
+                                x2 - self.SEG_SIZE, y2)
 
     def change_direction(self, event):
         # print('Ты нажал кнопку', event.char.lower())
@@ -82,7 +83,7 @@ class Snake:
         self.segments.insert(0, Segment(x, y))
 
     def get_head_pos(self):
-        return self.c.coords(self.head)
+        return self.__c.coords(self.head)
 
 
 class Food:
@@ -112,7 +113,15 @@ class Food:
 
 class Game(Frame):
     # def __new__(cls, *args, **kwargs):  # Можно зaдать канву до создания объекта класса (до __init__),  вместо Game.c = c.
-    #     cls.c = kwargs['c']
+    #     cls.root = kwargs['root']
+    #     cls.WIDTH = 800  # ширина экрана
+    #     cls.HEIGHT = 600  # высота экрана
+    #     cls.SEG_SIZE = 20  # Размер сегмента змейки
+    #
+    #     cls.c = Canvas(cls.root, width=cls.WIDTH, height=cls.HEIGHT, bg="#003300")
+    #     cls.c.grid()  # Без этого canvas не появится. Альтернатива pack()  и place()
+    #     cls.c.update()
+    #     cls.text_x, cls.text_y = cls.WIDTH * 0.9, cls.HEIGHT * 0.1
     #     return super().__new__(cls)
 
     def __init__(self, root, c: Canvas, segment_size):
