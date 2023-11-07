@@ -92,7 +92,8 @@ class Food:
         self.WIDTH, self.HEIGHT = self.c.winfo_width(), self.c.winfo_height()
         self.posx, self.posy = self.generate_rand_pos(self.WIDTH, self.HEIGHT)
         self.image = Image.open(img_path)
-        self.image = self.image.resize((Game.SEG_SIZE, Game.SEG_SIZE), Image.LANCZOS)
+        k = max(self.image.width, self.image.height) // Game.SEG_SIZE
+        self.image = self.image.resize((self.image.width // k, self.image.height // k), Image.LANCZOS)
         self.image = ImageTk.PhotoImage(self.image)
         self.val = val
 

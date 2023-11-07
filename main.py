@@ -8,7 +8,7 @@ root.resizable(False, False)
 
 game = Game(root=root)
 game.add_food(img_path='images/apple.png')
-game.add_food(img_path='images/apple.png', val=5)
+game.add_food(img_path='images/donut.png', val=5)
 game.main()
 
 game.mainloop()  # Запускаем окно
