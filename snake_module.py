@@ -59,6 +59,16 @@ class Snake:
                                 x1 - self.SEG_SIZE, y1,
                                 x2 - self.SEG_SIZE, y2)
 
+    def not_in_border(self):
+        x1, y1, x2,y2 = self.get_head_pos()
+        return x1 < 0 or x2 > self.__c.winfo_width() or y1 < 0 or y2 > self.__c.winfo_height()
+
+    def bite_yourself(self):
+        for index in range(len(self.segments) - 1):
+            if self.__c.coords(self.segments[index].instance) == self.get_head_pos():
+                return True
+        return False
+
     def change_direction(self, event):
         # print('Ты нажал кнопку', event.char.lower())
         match event.char.lower():
@@ -170,14 +180,13 @@ class Game(Frame):
         if self.start_new:
             self.init_game()
             self.start_new = False
-        self.s.move()
-        # [food.check_snake() for food in self.foods]
         self.check_feeding()
-        x1, y1, x2, y2 = self.s.get_head_pos()
-        if x1 < 0 or x2 > self.c.winfo_width() or y1 < 0 or y2 > self.c.winfo_height():
+        self.s.move()
+
+        if self.s.not_in_border() or self.s.bite_yourself():
             for segment in self.s.segments:
                 self.c.delete(segment.instance)
             self.c.delete(self.score_text)
-            # [self.c.delete(food) for food in self.foods]
             self.start_new = True
+
         self.c.after(100, self.main)
