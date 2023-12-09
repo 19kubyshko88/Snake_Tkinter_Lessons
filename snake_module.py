@@ -1,6 +1,7 @@
-import random
+import random, os
 from tkinter import *
 from PIL import Image, ImageTk
+from tkinter import messagebox as mb
 
 
 class Segment:
@@ -123,7 +124,7 @@ class Food:
 
 
 class Game(Frame):
-    root = None
+    root: Tk = None
     c = None
     score_text = None
     WIDTH = 800  # ширина экрана
@@ -176,6 +177,40 @@ class Game(Frame):
         self.score += val
         self.score_text = self.c.create_text(self.text_x, self.text_y, text=f"Счет: {self.score}", fill="white")
 
+    def show_name_input(self):
+        top = Toplevel(self.root)
+        # получаем координаты холста
+        x = self.root.winfo_x()
+        y = self.root.winfo_y()
+
+        # размещаем окно ввода поверх холста
+        x = self.root.winfo_x() + self.root.winfo_width()//2
+        y = self.root.winfo_y() + self.root.winfo_height()//2
+        top.geometry(f"+{x}+{y}")
+
+        top.title("Введи имя")
+
+        name = StringVar()
+        entry = Entry(top, textvariable=name)
+        entry.pack()
+
+        button = Button(top, text="Ok", command=lambda: self.save_result(name.get(), top))
+        button.pack()
+
+        top.focus_force()  # сфокусировать ввод с клавиатуры именно на окно top
+        top.grab_set()   # для блокировки всех других окон
+        top.wait_window()
+
+    def save_result(self, name, wind):
+        score_str = f"{name}: {self.score}"
+        if not os.path.exists("scores.txt"):
+            with open("scores.txt", "w") as f:
+                f.write(score_str + "\n")
+        else:
+            with open("scores.txt", "a") as f:
+                f.write(score_str + "\n")
+        wind.destroy()
+
     def main(self):
         if self.start_new:
             self.init_game()
@@ -184,9 +219,16 @@ class Game(Frame):
         self.s.move()
 
         if self.s.not_in_border() or self.s.bite_yourself():
-            for segment in self.s.segments:
-                self.c.delete(segment.instance)
-            self.c.delete(self.score_text)
-            self.start_new = True
+            self.show_name_input()
+            answer = mb.askyesno(title="Конец",
+                                 message="Продолжить игру?")
+            if answer:
+                for segment in self.s.segments:
+                    self.c.delete(segment.instance)
+                self.c.delete(self.score_text)
+                self.start_new = True
+            else:
+                # self.root.quit()
+                self.root.destroy()
 
         self.c.after(100, self.main)
