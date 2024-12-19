@@ -131,6 +131,8 @@ class Game(Frame):
     HEIGHT = 600  # высота экрана
     SEG_SIZE = 20  # Размер сегмента змейки
     text_x, text_y = WIDTH * 0.9, HEIGHT * 0.1
+    if not os.path.exists("scores.txt"):
+        open("scores.txt", "w").close()
 
     def __new__(cls, *args, **kwargs):
         cls.root = kwargs['root']
@@ -197,18 +199,26 @@ class Game(Frame):
         button = Button(top, text="Ok", command=lambda: self.save_result(name.get(), top))
         button.pack()
 
-        top.focus_force()  # сфокусировать ввод с клавиатуры именно на окно top
+        button.focus_force()  # сфокусировать ввод с клавиатуры именно на окно top
         top.grab_set()   # для блокировки всех других окон
         top.wait_window()
 
     def save_result(self, name, wind):
         score_str = f"{name}: {self.score}"
-        if not os.path.exists("scores.txt"):
-            with open("scores.txt", "w") as f:
-                f.write(score_str + "\n")
-        else:
-            with open("scores.txt", "a") as f:
-                f.write(score_str + "\n")
+        with open('scores.txt', 'r+', encoding='utf-8') as f:
+            record_list = f.readlines()
+            record_list.append(score_str)
+            record_dict = {line.split(':')[0].strip(): int(line.split(':')[1].strip()) for line in record_list}
+            sorted_records = dict(sorted(record_dict.items(), key=lambda item: item[1], reverse=True))
+            f.seek(0)
+            dict_len = len(sorted_records)
+            counter = 0
+            for name, scores in sorted_records.items():
+                if counter < dict_len:
+                    f.write(f'{name}:{scores}\n')
+                    counter += 1
+                else:
+                    f.write(f'{name}:{scores}')
         wind.destroy()
 
     def main(self):
