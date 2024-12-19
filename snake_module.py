@@ -136,12 +136,13 @@ class Game(Frame):
 
     def __new__(cls, *args, **kwargs):
         cls.root = kwargs['root']
+        cls.SEG_SIZE = kwargs.get('seg_size') if kwargs.get('seg_size') else cls.SEG_SIZE
         cls.c = Canvas(cls.root, width=cls.WIDTH, height=cls.HEIGHT, bg="#003300")
         cls.c.grid()  # Без этого canvas не появится. Альтернатива pack()  и place()
         cls.c.update()  # Нужно чтобы канва приняла размер>0. Иначе ошибка.
         return super().__new__(cls)
 
-    def __init__(self, root):
+    def __init__(self, root, *args, **kwargs):
         super().__init__(root)
         self.start_new = True
         self.foods = []
