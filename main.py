@@ -1,6 +1,12 @@
 from snake_module import *
 import tkinter.ttk as ttk
 
+# Создаем экземпляр класса для управления музыкой
+music_manager = BackgroundMusic()
+
+# Глобальная переменная для состояния чекбокса "Фоновая музыка"
+
+
 # Создаем окно
 root = Tk()
 
@@ -21,8 +27,12 @@ main_menu.add_cascade(label="Рекорды", menu=records_menu)
 about_menu = Menu(main_menu)
 main_menu.add_cascade(label="Об игре", menu=about_menu)
 
+settings_menu = Menu(main_menu)
+main_menu.add_cascade(label="Настройки", menu=settings_menu)
+
 main_menu.add_command(label="Выход", command=root.quit)
 
+background_music_var = BooleanVar(value=True)  # По умолчанию включено
 
 def show_records():
     records_window = Toplevel(root)
@@ -58,5 +68,55 @@ def show_about():
 
     frame.pack(fill="both", expand=True)
 
+
 about_menu.add_command(label="Об игре", command=show_about)
+
+def show_sound_settings():
+    sound_settings_panel = Toplevel(root)
+    frame = Frame(sound_settings_panel, bg="white", padx=20, pady=20)
+    msg = Label(frame,
+                text="Настройки звука",
+                bg="white",
+                padx=10,
+                pady=10)
+
+    msg.pack(fill="both", expand=True)
+
+    # Переменная для хранения состояния чекбокса "Звуки игры"
+    game_sounds_var = BooleanVar(value=True)  # По умолчанию включено
+
+    # Чекбокс для фоновой музыки
+    background_music_check = Checkbutton(frame,
+                                         text="Фоновая музыка",
+                                         variable=background_music_var,
+                                         bg="white",
+                                         command=lambda: music_manager.play() if background_music_var.get() else music_manager.stop())  # Управляем музыкой
+    background_music_check.pack(anchor="w", pady=5)
+
+    # Чекбокс для звуков игры
+    game_sounds_check = Checkbutton(frame,
+                                    text="Звуки игры",
+                                    variable=game_sounds_var,
+                                    bg="white")
+    game_sounds_check.pack(anchor="w", pady=5)
+
+    # Кнопка для сохранения настроек
+    def save_settings():
+        # Здесь можно добавить логику для сохранения настроек
+        print("Фоновая музыка:", background_music_var.get())
+        print("Звуки игры:", game_sounds_var.get())
+
+    save_button = Button(frame,
+                         text="Сохранить",
+                         command=save_settings)
+    save_button.pack(pady=10)
+
+    frame.pack(fill="both", expand=True)
+
+
+# Включаем музыку при запуске игры
+music_manager.play()
+
+settings_menu.add_command(label="Звук", command=show_sound_settings)
+
 game.mainloop()  # Запускаем окно

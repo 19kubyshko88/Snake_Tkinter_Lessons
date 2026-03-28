@@ -2,6 +2,27 @@ import random, os
 from tkinter import *
 from PIL import Image, ImageTk
 from tkinter import messagebox as mb
+import pygame  # Импортируем pygame для работы со звуком
+
+
+# Класс для управления фоновой музыкой
+class BackgroundMusic:
+    def __init__(self):
+        pygame.mixer.init()  # Инициализация микшера
+        self.music_playing = False
+
+    def play(self):
+        """Воспроизводит музыку в цикле."""
+        if not self.music_playing:
+            pygame.mixer.music.load("sound.mp3")  # Загружаем музыку
+            pygame.mixer.music.play(-1)  # Воспроизводим в цикле
+            self.music_playing = True
+
+    def stop(self):
+        """Останавливает воспроизведение музыки."""
+        if self.music_playing:
+            pygame.mixer.music.stop()  # Останавливаем музыку
+            self.music_playing = False
 
 
 class Segment:
